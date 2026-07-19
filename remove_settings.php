@@ -13,16 +13,11 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+require_once(__DIR__ . '/Sources/Sitemap.subs.php');
+
 global $smcFunc;
 
-$settings = array(
-	'sitemap_topic_count',
-	'sitemap_cache_ttl',
-	'sitemap_30day_priority',
-	'sitemap_60day_priority',
-	'sitemap_90day_priority',
-	'sitemap_91day_priority',
-);
+$settings = SitemapSettingKeys();
 
 $smcFunc['db_query'](
 	'',
