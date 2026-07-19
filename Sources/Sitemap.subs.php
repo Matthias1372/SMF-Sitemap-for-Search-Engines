@@ -9,3 +9,8 @@ function SitemapDefaultSettings()
 		'sitemap_91day_priority' => '0.2',
 	);
 }
+
+function SitemapSettingKeys()
+{
+	return array_keys(SitemapDefaultSettings());
+}
