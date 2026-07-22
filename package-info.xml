@@ -1,38 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE package-info SYSTEM "https://www.simplemachines.org/xml/package-info.dtd">
+<!DOCTYPE package-info SYSTEM="https://www.simplemachines.org/xml/package-info.dtd">
 
 <package-info
-    id="matthiasfeik:sitemapforsearchengines"
-    version="1.0.0"
-    xmlns="http://www.simplemachines.org/xml/package-info">
+	xmlns="http://www.simplemachines.org/xml/package-info"
+	id="matthiasfeik:sitemapforsearchengines"
+	version="1.0.0">
 
 	<name>Sitemap for Search Engines</name>
+
 	<version>1.0.0</version>
+
 	<type>modification</type>
-	
+
 	<install for="2.1 - 2.1.*">
-		<!-- Files -->
-		<require-file name="Sources/Sitemap.php" destination="$sourcedir" />
-		<require-dir name="Sources/Sitemap-Ext" destination="$sourcedir" />
-		<require-file name="Themes/default/Sitemap.template.php" destination="$themedir" />
-		<require-dir name="Themes/default/languages" destination="$themedir" />
-		<!-- Hooks -->
-		<hook hook="integrate_actions" function="SitemapActions" file="$sourcedir/Sitemap.php" />
-		<hook hook="integrate_general_mod_settings" function="SitemapGeneralModSettings" file="$sourcedir/Sitemap.php" />
-		<!-- Install script -->
+
+		<!-- Source files -->
+		<require-file
+			name="Sources/Sitemap.php"
+			destination="$sourcedir" />
+
+		<require-file
+			name="Sources/Sitemap.subs.php"
+			destination="$sourcedir" />
+
+		<require-dir
+			name="Sources/Sitemap-Ext"
+			destination="$sourcedir" />
+
+		<!-- Theme -->
+		<require-file
+			name="Themes/default/Sitemap.template.php"
+			destination="$themesdir/default" />
+
+		<!-- Language files -->
+		<require-file
+			name="Themes/default/languages/Sitemap.english.php"
+			destination="$languagesdir" />
+
+		<require-file
+			name="Themes/default/languages/Sitemap.german.php"
+			destination="$languagesdir" />
+
+		<require-file
+			name="Themes/default/languages/Sitemap.german_du.php"
+			destination="$languagesdir" />
+
+		<!-- Register hooks -->
+		<hook
+			hook="integrate_actions"
+			function="SitemapActions"
+			file="$sourcedir/Sitemap.php" />
+
+		<hook
+			hook="integrate_general_mod_settings"
+			function="SitemapGeneralModSettings"
+			file="$sourcedir/Sitemap.php" />
+
+		<!-- Create default settings -->
 		<code>add_settings.php</code>
+
 	</install>
-	
+
 	<uninstall for="2.1 - 2.1.*">
-		<!-- Remove files and folders -->
-		<remove-file name="$sourcedir/Sitemap.php" />
-		<remove-dir name="$sourcedir/Sitemap-Ext" />
-		<remove-file name="$themedir/Sitemap.template.php" />
-		<remove-dir name="$themedir/languages" />
-		<!-- Remove hooks -->
-		<hook hook="integrate_actions" function="SitemapActions" file="$sourcedir/Sitemap.php" reverse="true" />
-		<hook hook="integrate_general_mod_settings" function="SitemapGeneralModSettings" file="$sourcedir/Sitemap.php" reverse="true" />
-		<!-- Uninstall script -->
+
+		<!-- Remove settings -->
 		<code>remove_settings.php</code>
+
+		<!-- Remove hooks -->
+		<hook
+			hook="integrate_actions"
+			function="SitemapActions"
+			file="$sourcedir/Sitemap.php"
+			reverse="true" />
+
+		<hook
+			hook="integrate_general_mod_settings"
+			function="SitemapGeneralModSettings"
+			file="$sourcedir/Sitemap.php"
+			reverse="true" />
+
 	</uninstall>
+
 </package-info>
