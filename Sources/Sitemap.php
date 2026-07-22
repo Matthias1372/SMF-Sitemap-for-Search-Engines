@@ -41,6 +41,7 @@ function SitemapActions(&$actions)
  */
 function SitemapGeneralModSettings(&$config_vars)
 {
+	$priorities = SitemapPriorities();
 }
 
 /**
@@ -50,6 +51,54 @@ function SitemapGeneralModSettings(&$config_vars)
  */
 function ShowSiteMap()
 {
+	global $context, $scripturl, $txt, $sourcedir;
+
+	loadLanguage('Sitemap');
+
+	$context['page_title'] = $txt['sitemap'];
+
+	$context['linktree'][] = array(
+		'url' => SitemapCreateUrl('index'),
+		'name' => $txt['sitemap'],
+	);
+
+	$subAction = isset($_REQUEST['sa']) ? ucfirst(strtolower($_REQUEST['sa'])) : 'Boards';
+
+	$extension = SitemapGetExtension($subAction);
+
+	if ($extension === null || empty($extension['display']))
+		fatal_lang_error('invalid_sitemap_subaction', false);
+
+	require_once($sourcedir . '/Sitemap-Ext/' . $extension['file']);
+
+	$displayFunction = SitemapDisplayFunction($subAction);
+
+	if (!function_exists($displayFunction))
+		fatal_lang_error('invalid_sitemap_subaction', false);
+
+	$listOptions = $displayFunction();
+
+	require_once($sourcedir . '/Subs-List.php');
+
+	$listOptions['id'] = 'sitemap';
+	$listOptions['base_href'] = SitemapCreateUrl(strtolower($subAction));
+
+	createList($listOptions);
+
+	$context['sub_template'] = 'show_list';
+	$context['default_list'] = 'sitemap';
+}
+
+function SitemapBoardsXml()
+{
+	return array(
+		array(
+			'loc' => 'https://example.com/index.php?board=1.0',
+			'lastmod' => '2026-07-22',
+			'changefreq' => 'daily',
+			'priority' => '0.8',
+		),
+	);
 }
 
 /**
@@ -59,6 +108,49 @@ function ShowSiteMap()
  */
 function ShowSiteMapXml()
 {
+	global $sourcedir;
+
+	loadLanguage('Sitemap');
+
+	$sections = SitemapXmlSections();
+
+	header('Content-Type: application/xml; charset=UTF-8');
+
+	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+	echo '<urlset xmlns="' . SitemapXmlNamespace() . '">' . "\n";
+
+	foreach ($sections as $name => $extension)
+{
+	require_once($sourcedir . '/Sitemap-Ext/' . $extension['file']);
+
+	$xmlFunction = 'Sitemap' . $name . 'Xml';
+
+	if (!function_exists($xmlFunction))
+		continue;
+
+	$urls = $xmlFunction();
+
+	foreach ($urls as $url)
+	{
+		echo "\t<url>\n";
+		echo "\t\t<loc>" . SitemapEscapeXml($url['loc']) . "</loc>\n";
+
+		if (!empty($url['lastmod']))
+			echo "\t\t<lastmod>{$url['lastmod']}</lastmod>\n";
+
+		if (!empty($url['changefreq']))
+			echo "\t\t<changefreq>{$url['changefreq']}</changefreq>\n";
+
+		if (!empty($url['priority']))
+			echo "\t\t<priority>{$url['priority']}</priority>\n";
+
+		echo "\t</url>\n";
+	}
+}
+
+	echo "</urlset>\n";
+
+	obExit(false);
 }
 
 /**
@@ -70,5 +162,5 @@ function ShowSiteMapXml()
  */
 function SitemapBuffer($buffer)
 {
-	return $buffer;
+	$link = SitemapFooterLink();
 }
