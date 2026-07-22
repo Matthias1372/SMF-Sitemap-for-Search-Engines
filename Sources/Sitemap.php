@@ -79,16 +79,18 @@ function ShowSiteMap()
 	$listOptions = $displayFunction();
 
 	require_once($sourcedir . '/Subs-List.php');
-
+	
 	$listOptions['id'] = 'sitemap';
 	$listOptions['base_href'] = SitemapCreateUrl(strtolower($subAction));
-
+	
 	createList($listOptions);
-
-	$context['sub_template'] = 'show_list';
+	
+	loadTemplate('Sitemap');
+	
+	$context['sub_template'] = 'sitemap_main';
 	$context['default_list'] = 'sitemap';
 }
-
+	
 function SitemapBoardsXml()
 {
 	return array(
