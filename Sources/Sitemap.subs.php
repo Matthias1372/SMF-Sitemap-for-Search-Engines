@@ -338,3 +338,90 @@ function SitemapXmlNamespace()
 {
 	return 'http://www.sitemaps.org/schemas/sitemap/0.9';
 }
+
+/**
+ * Adds the Sitemap settings to the Administration Center.
+ *
+ * @param array $config_vars
+ *
+ * @return void
+ */
+function SitemapGeneralModSettings(&$config_vars)
+{
+	global $txt, $scripturl;
+
+	loadLanguage('Sitemap');
+
+	$settings = SitemapDefaultSettings();
+
+	$priorities = array(
+		'1.0' => '1.0',
+		'0.9' => '0.9',
+		'0.8' => '0.8',
+		'0.7' => '0.7',
+		'0.6' => '0.6',
+		'0.5' => '0.5',
+		'0.4' => '0.4',
+		'0.3' => '0.3',
+		'0.2' => '0.2',
+		'0.1' => '0.1',
+		'0.0' => '0.0',
+	);
+
+	$config_vars[] = '';
+
+	$config_vars[] = array(
+		'title',
+		'sitemap',
+	);
+
+	$config_vars[] = array(
+		'message',
+		sprintf(
+			$txt['sitemap_xml_info'],
+			SitemapCreateUrl('xml')
+		)
+	);
+
+	$config_vars[] = array(
+		'int',
+		'sitemap_topic_count',
+		0,
+		$settings['sitemap_topic_count'],
+	);
+
+	$config_vars[] = array(
+		'int',
+		'sitemap_cache_ttl',
+		0,
+		$settings['sitemap_cache_ttl'],
+	);
+
+	$config_vars[] = array(
+		'select',
+		'sitemap_30day_priority',
+		$priorities,
+		$settings['sitemap_30day_priority'],
+	);
+
+	$config_vars[] = array(
+		'select',
+		'sitemap_60day_priority',
+		$priorities,
+		$settings['sitemap_60day_priority'],
+	);
+
+	$config_vars[] = array(
+		'select',
+		'sitemap_90day_priority',
+		$priorities,
+		$settings['sitemap_90day_priority'],
+	);
+
+	$config_vars[] = array(
+		'select',
+		'sitemap_91day_priority',
+		$priorities,
+		$settings['sitemap_91day_priority'],
+	);
+}
