@@ -138,28 +138,18 @@ function SitemapCreateUrl($type, $parameters = array())
 {
 	global $scripturl;
 
-	switch ($type)
-	{
-		case 'index':
-			$url = $scripturl . '?action=sitemap';
-			break;
+	if ($type === 'index')
+		$url = $scripturl . '?action=sitemap';
+	elseif ($type === 'xml')
+		$url = $scripturl . '?action=sitemap;xml';
+	else
+		$url = $scripturl . '?action=sitemap;sa=' . strtolower($type);
 
-		case 'xml':
-			$url = $scripturl . '?action=sitemap;xml';
-			break;
+	foreach ($parameters as $key => $value)
+		$url .= ';' . urlencode($key) . '=' . urlencode($value);
 
-		case 'boards':
-			$url = $scripturl . '?action=sitemap;sa=boards';
-			break;
-
-		case 'topics':
-			$url = $scripturl . '?action=sitemap;sa=topics';
-			break;
-
-		default:
-			$url = $scripturl . '?action=sitemap;sa=' . urlencode($type);
-			break;
-	}
+	return $url;
+}
 
 	if (!empty($parameters))
 	{
@@ -424,4 +414,31 @@ function SitemapGeneralModSettings(&$config_vars)
 		$priorities,
 		$settings['sitemap_91day_priority'],
 	);
+}
+
+function SitemapDisplayFunction($extension)
+{
+	return 'Sitemap' . $extension . 'Display';
+}
+
+function SitemapXmlFunction($extension)
+{
+	return 'Sitemap' . $extension . 'Xml';
+}
+
+/**
+ * Returns the HTML code for the Sitemap footer link.
+ *
+ * @return string
+ */
+function SitemapFooterLink()
+{
+	global $txt;
+
+	loadLanguage('Sitemap');
+
+	return '
+	<div class="smalltext centertext sitemap_link">
+		<a href="' . SitemapCreateUrl('xml') . '">' . $txt['sitemap_xml'] . '</a>
+	</div>';
 }
