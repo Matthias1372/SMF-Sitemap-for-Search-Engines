@@ -3,8 +3,14 @@
 /**
  * Sitemap for Search Engines
  *
+ * Installation script.
+ *
+ * This file is included inside SMF's PackageInstall() function. All work is
+ * therefore isolated in an anonymous function to avoid overwriting variables
+ * used internally by the package manager.
+ *
  * @package Sitemap for Search Engines
- * @version 1.0.0
+ * @version 1.1.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT
@@ -13,47 +19,25 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
-require_once(__DIR__ . '/Sources/Sitemap.subs.php');
+(function () {
+	global $modSettings;
 
-global $smcFunc;
-
-$settings = SitemapDefaultSettings();
-
-$request = $smcFunc['db_query'](
-	'',
-	'SELECT variable, value
-	FROM {db_prefix}settings
-	WHERE variable IN ({array_string:variables})',
-	array(
-		'variables' => array_keys($settings),
-	)
-);
-
-$existing = array();
-
-while ($row = $smcFunc['db_fetch_assoc']($request))
-	$existing[$row['variable']] = $row['value'];
-
-$smcFunc['db_free_result']($request);
-
-$insert = array();
-
-foreach ($settings as $variable => $value)
-{
-	if (!isset($existing[$variable]))
-		$insert[] = array($variable, $value);
-}
-
-if (!empty($insert))
-{
-	$smcFunc['db_insert'](
-		'insert',
-		'{db_prefix}settings',
-		array(
-			'variable' => 'string-255',
-			'value' => 'string-65534',
-		),
-		$insert,
-		array('variable')
+	$sitemap_defaults = array(
+		'sitemap_topic_count' => '1000',
+		'sitemap_cache_ttl' => '3600',
+		'sitemap_30day_priority' => '0.8',
+		'sitemap_60day_priority' => '0.6',
+		'sitemap_90day_priority' => '0.4',
+		'sitemap_91day_priority' => '0.2',
 	);
-}
+	$sitemap_updates = array();
+
+	foreach ($sitemap_defaults as $sitemap_key => $sitemap_value)
+	{
+		if (!isset($modSettings[$sitemap_key]))
+			$sitemap_updates[$sitemap_key] = $sitemap_value;
+	}
+
+	if (!empty($sitemap_updates))
+		updateSettings($sitemap_updates);
+})();

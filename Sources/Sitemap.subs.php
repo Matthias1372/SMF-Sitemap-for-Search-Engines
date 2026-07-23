@@ -6,7 +6,7 @@
  * Common helper functions.
  *
  * @package Sitemap for Search Engines
- * @version 1.0.0
+ * @version 1.1.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT
@@ -15,11 +15,9 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+
 /**
  * Returns the default settings for the Sitemap modification.
- *
- * These values are used during installation and as fallbacks if
- * a setting has not yet been stored in the database.
  *
  * @return array
  */
@@ -46,9 +44,25 @@ function SitemapSettingKeys()
 }
 
 /**
- * Returns the current Sitemap settings.
+ * Returns the selectable XML priority values.
  *
- * Missing settings are automatically filled with the default values.
+ * @return array
+ */
+function SitemapPriorities()
+{
+	$priorities = array();
+
+	for ($priority = 10; $priority >= 0; $priority--)
+	{
+		$value = number_format($priority / 10, 1, '.', '');
+		$priorities[$value] = $value;
+	}
+
+	return $priorities;
+}
+
+/**
+ * Returns the current Sitemap settings.
  *
  * @return array
  */
@@ -68,54 +82,7 @@ function SitemapSettings()
 }
 
 /**
- * Returns cached data.
- *
- * Wrapper around SMF's cache_get_data().
- *
- * @param string $key Cache key.
- * @param int $ttl Cache lifetime in seconds. If 0, the configured
- *                 Sitemap cache lifetime is used.
- *
- * @return mixed
- */
-function SitemapCacheGet($key, $ttl = 0)
-{
-	if ($ttl <= 0)
-	{
-		$settings = SitemapSettings();
-		$ttl = (int) $settings['sitemap_cache_ttl'];
-	}
-
-	return cache_get_data($key, $ttl);
-}
-
-/**
- * Stores data in the cache.
- *
- * Wrapper around SMF's cache_put_data().
- *
- * @param string $key Cache key.
- * @param mixed $value Data to cache.
- * @param int $ttl Cache lifetime in seconds. If 0, the configured
- *                 Sitemap cache lifetime is used.
- *
- * @return void
- */
-function SitemapCachePut($key, $value, $ttl = 0)
-{
-	if ($ttl <= 0)
-	{
-		$settings = SitemapSettings();
-		$ttl = (int) $settings['sitemap_cache_ttl'];
-	}
-
-	cache_put_data($key, $value, $ttl);
-}
-
-/**
  * Returns a cache key for the Sitemap modification.
- *
- * Prepends the standard Sitemap prefix to the specified cache name.
  *
  * @param string $name Cache name.
  *
@@ -123,7 +90,52 @@ function SitemapCachePut($key, $value, $ttl = 0)
  */
 function SitemapCacheKey($name)
 {
-	return 'sitemap_' . $name;
+	return 'sitemap_' . preg_replace('~[^a-z0-9_\-]~i', '', (string) $name);
+}
+
+/**
+ * Returns cached data.
+ *
+ * @param string $name Logical cache name.
+ * @param int|null $ttl Cache lifetime or null for the configured lifetime.
+ *
+ * @return mixed
+ */
+function SitemapCacheGet($name, $ttl = null)
+{
+	if ($ttl === null)
+	{
+		$settings = SitemapSettings();
+		$ttl = (int) $settings['sitemap_cache_ttl'];
+	}
+
+	if ($ttl <= 0)
+		return null;
+
+	return cache_get_data(SitemapCacheKey($name), $ttl);
+}
+
+/**
+ * Stores data in the cache.
+ *
+ * @param string $name Logical cache name.
+ * @param mixed $value Data to cache.
+ * @param int|null $ttl Cache lifetime or null for the configured lifetime.
+ *
+ * @return void
+ */
+function SitemapCachePut($name, $value, $ttl = null)
+{
+	if ($ttl === null)
+	{
+		$settings = SitemapSettings();
+		$ttl = (int) $settings['sitemap_cache_ttl'];
+	}
+
+	if ($ttl <= 0)
+		return;
+
+	cache_put_data(SitemapCacheKey($name), $value, $ttl);
 }
 
 /**
@@ -138,24 +150,15 @@ function SitemapCreateUrl($type, $parameters = array())
 {
 	global $scripturl;
 
+	$type = strtolower(preg_replace('~[^a-z0-9_\-]~i', '', (string) $type));
+
 	if ($type === 'index')
 		$url = $scripturl . '?action=sitemap';
-	elseif ($type === 'xml')
-		$url = $scripturl . '?action=sitemap;xml';
 	else
-		$url = $scripturl . '?action=sitemap;sa=' . strtolower($type);
+		$url = $scripturl . '?action=sitemap;sa=' . $type;
 
 	foreach ($parameters as $key => $value)
-		$url .= ';' . urlencode($key) . '=' . urlencode($value);
-
-	return $url;
-}
-
-	if (!empty($parameters))
-	{
-		foreach ($parameters as $key => $value)
-			$url .= ';' . urlencode($key) . '=' . urlencode($value);
-	}
+		$url .= ';' . rawurlencode((string) $key) . '=' . rawurlencode((string) $value);
 
 	return $url;
 }
@@ -163,23 +166,23 @@ function SitemapCreateUrl($type, $parameters = array())
 /**
  * Calculates the XML priority for a topic.
  *
- * @param int $timestamp Unix timestamp of the topic's last modification.
+ * @param int $timestamp Unix timestamp of the last modification.
  *
  * @return string
  */
 function SitemapGetPriority($timestamp)
 {
 	$settings = SitemapSettings();
+	$age = max(0, time() - (int) $timestamp);
+	$days = (int) floor($age / 86400);
 
-	$age = floor((time() - (int) $timestamp) / 86400);
-
-	if ($age <= 30)
+	if ($days <= 30)
 		return $settings['sitemap_30day_priority'];
 
-	if ($age <= 60)
+	if ($days <= 60)
 		return $settings['sitemap_60day_priority'];
 
-	if ($age <= 90)
+	if ($days <= 90)
 		return $settings['sitemap_90day_priority'];
 
 	return $settings['sitemap_91day_priority'];
@@ -187,9 +190,6 @@ function SitemapGetPriority($timestamp)
 
 /**
  * Loads all available Sitemap extensions.
- *
- * Searches the Sources/Sitemap-Ext directory for extension files and
- * returns information about the available display and XML handlers.
  *
  * @return array
  */
@@ -199,44 +199,34 @@ function SitemapLoadExtensions()
 
 	$extensions = SitemapCacheGet('extensions');
 
-	if ($extensions !== null)
+	if (is_array($extensions))
 		return $extensions;
 
 	$extensions = array();
-
 	$directory = $sourcedir . '/Sitemap-Ext';
+	$files = is_dir($directory) ? glob($directory . '/*.php') : array();
 
-	if (!is_dir($directory))
-		return $extensions;
+	if ($files === false)
+		$files = array();
 
-	$dir = opendir($directory);
-
-	if ($dir === false)
-		return $extensions;
-
-	while (($file = readdir($dir)) !== false)
+	foreach ($files as $path)
 	{
-		if ($file === '.' || $file === '..')
-			continue;
-
-		if (substr($file, -4) !== '.php')
-			continue;
-
+		$file = basename($path);
 		$name = basename($file, '.php');
+		$key = strtolower($name);
 
-		require_once($directory . '/' . $file);
+		require_once($path);
 
-		$extensions[$name] = array(
+		$extensions[$key] = array(
+			'name' => $name,
 			'file' => $file,
-			'display' => function_exists('Sitemap' . $name . 'Display'),
-			'xml' => function_exists('Sitemap' . $name . 'Xml'),
+			'url' => SitemapCreateUrl($key),
+			'display' => function_exists(SitemapDisplayFunction($name)),
+			'xml' => function_exists(SitemapXmlFunction($name)),
 		);
 	}
 
-	closedir($dir);
-
 	ksort($extensions);
-
 	SitemapCachePut('extensions', $extensions);
 
 	return $extensions;
@@ -252,75 +242,73 @@ function SitemapLoadExtensions()
 function SitemapGetExtension($name)
 {
 	$extensions = SitemapLoadExtensions();
+	$key = strtolower((string) $name);
 
-	if (isset($extensions[$name]))
-		return $extensions[$name];
-
-	return null;
+	return isset($extensions[$key]) ? $extensions[$key] : null;
 }
 
 /**
- * Returns all available HTML Sitemap sections.
+ * Returns extensions that provide an HTML list.
  *
  * @return array
  */
 function SitemapDisplaySections()
 {
-	$extensions = SitemapLoadExtensions();
-
-	$sections = array();
-
-	foreach ($extensions as $name => $extension)
-	{
-		if (empty($extension['display']))
-			continue;
-
-		$sections[$name] = array(
-			'name' => $name,
-			'url' => SitemapCreateUrl(strtolower($name)),
-			'file' => $extension['file'],
-		);
-	}
-
-	return $sections;
+	return array_filter(SitemapLoadExtensions(), function ($extension) {
+		return !empty($extension['display']);
+	});
 }
 
 /**
- * Returns all available XML Sitemap sections.
+ * Returns extensions that provide XML URLs.
  *
  * @return array
  */
 function SitemapXmlSections()
 {
-	$extensions = SitemapLoadExtensions();
-
-	$sections = array();
-
-	foreach ($extensions as $name => $extension)
-	{
-		if (empty($extension['xml']))
-			continue;
-
-		$sections[$name] = $extension;
-	}
-
-	return $sections;
+	return array_filter(SitemapLoadExtensions(), function ($extension) {
+		return !empty($extension['xml']);
+	});
 }
 
 /**
- * Escapes a string for XML output.
+ * Returns the display handler name for an extension.
  *
- * @param string $string String to escape.
+ * @param string $extension Extension name.
+ *
+ * @return string
+ */
+function SitemapDisplayFunction($extension)
+{
+	return 'Sitemap' . ucfirst(strtolower((string) $extension)) . 'Display';
+}
+
+/**
+ * Returns the XML handler name for an extension.
+ *
+ * @param string $extension Extension name.
+ *
+ * @return string
+ */
+function SitemapXmlFunction($extension)
+{
+	return 'Sitemap' . ucfirst(strtolower((string) $extension)) . 'Xml';
+}
+
+/**
+ * Escapes a value for XML output.
+ *
+ * @param mixed $string Value to escape.
  *
  * @return string
  */
 function SitemapEscapeXml($string)
 {
-	return htmlspecialchars($string, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+	return htmlspecialchars((string) $string, ENT_XML1 | ENT_COMPAT, 'UTF-8');
 }
 
 /**
- * Returns the XML namespace.
+ * Returns the Sitemap XML namespace.
  *
  * @return string
  */
@@ -329,105 +317,83 @@ function SitemapXmlNamespace()
 	return 'http://www.sitemaps.org/schemas/sitemap/0.9';
 }
 
+
 /**
- * Adds the Sitemap settings to the Administration Center.
+ * Returns the maximum number of URLs in a generated child Sitemap.
  *
- * @param array $config_vars
+ * @return int
+ */
+function SitemapXmlPageSize()
+{
+	return 50000;
+}
+
+/**
+ * Outputs a Sitemap URL set.
+ *
+ * @param array $urls Sitemap URL records.
  *
  * @return void
  */
-function SitemapGeneralModSettings(&$config_vars)
+function SitemapOutputUrlSet($urls)
 {
-	global $txt, $scripturl;
+	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+	echo '<urlset xmlns="' . SitemapXmlNamespace() . '">' . "\n";
 
-	loadLanguage('Sitemap');
+	if (is_array($urls))
+	{
+		foreach ($urls as $url)
+		{
+			if (!is_array($url) || empty($url['loc']))
+				continue;
 
-	$settings = SitemapDefaultSettings();
+			echo "\t<url>\n";
+			echo "\t\t<loc>" . SitemapEscapeXml($url['loc']) . "</loc>\n";
 
-	$priorities = array(
-		'1.0' => '1.0',
-		'0.9' => '0.9',
-		'0.8' => '0.8',
-		'0.7' => '0.7',
-		'0.6' => '0.6',
-		'0.5' => '0.5',
-		'0.4' => '0.4',
-		'0.3' => '0.3',
-		'0.2' => '0.2',
-		'0.1' => '0.1',
-		'0.0' => '0.0',
-	);
+			foreach (array('lastmod', 'changefreq', 'priority') as $element)
+			{
+				if (isset($url[$element]) && $url[$element] !== '')
+					echo "\t\t<" . $element . '>' . SitemapEscapeXml($url[$element]) . '</' . $element . ">\n";
+			}
 
-	$config_vars[] = '';
+			echo "\t</url>\n";
+		}
+	}
 
-	$config_vars[] = array(
-		'title',
-		'sitemap',
-	);
-
-	$config_vars[] = array(
-		'message',
-		sprintf(
-			$txt['sitemap_xml_info'],
-			SitemapCreateUrl('xml')
-		)
-	);
-
-	$config_vars[] = array(
-		'int',
-		'sitemap_topic_count',
-		0,
-		$settings['sitemap_topic_count'],
-	);
-
-	$config_vars[] = array(
-		'int',
-		'sitemap_cache_ttl',
-		0,
-		$settings['sitemap_cache_ttl'],
-	);
-
-	$config_vars[] = array(
-		'select',
-		'sitemap_30day_priority',
-		$priorities,
-		$settings['sitemap_30day_priority'],
-	);
-
-	$config_vars[] = array(
-		'select',
-		'sitemap_60day_priority',
-		$priorities,
-		$settings['sitemap_60day_priority'],
-	);
-
-	$config_vars[] = array(
-		'select',
-		'sitemap_90day_priority',
-		$priorities,
-		$settings['sitemap_90day_priority'],
-	);
-
-	$config_vars[] = array(
-		'select',
-		'sitemap_91day_priority',
-		$priorities,
-		$settings['sitemap_91day_priority'],
-	);
-}
-
-function SitemapDisplayFunction($extension)
-{
-	return 'Sitemap' . $extension . 'Display';
-}
-
-function SitemapXmlFunction($extension)
-{
-	return 'Sitemap' . $extension . 'Xml';
+	echo "</urlset>\n";
 }
 
 /**
- * Returns the HTML code for the Sitemap footer link.
+ * Outputs a Sitemap index.
+ *
+ * @param array $sitemaps Child Sitemap records.
+ *
+ * @return void
+ */
+function SitemapOutputIndex($sitemaps)
+{
+	echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+	echo '<sitemapindex xmlns="' . SitemapXmlNamespace() . '">' . "\n";
+
+	foreach ($sitemaps as $sitemap)
+	{
+		if (!is_array($sitemap) || empty($sitemap['loc']))
+			continue;
+
+		echo "\t<sitemap>\n";
+		echo "\t\t<loc>" . SitemapEscapeXml($sitemap['loc']) . "</loc>\n";
+
+		if (!empty($sitemap['lastmod']))
+			echo "\t\t<lastmod>" . SitemapEscapeXml($sitemap['lastmod']) . "</lastmod>\n";
+
+		echo "\t</sitemap>\n";
+	}
+
+	echo "</sitemapindex>\n";
+}
+
+/**
+ * Creates the footer link HTML.
  *
  * @return string
  */
@@ -437,8 +403,5 @@ function SitemapFooterLink()
 
 	loadLanguage('Sitemap');
 
-	return '
-	<div class="smalltext centertext sitemap_link">
-		<a href="' . SitemapCreateUrl('xml') . '">' . $txt['sitemap_xml'] . '</a>
-	</div>';
+	return '\n\t<div class="smalltext centertext sitemap_link"><a href="' . SitemapCreateUrl('xml') . '">' . $txt['sitemap_xml'] . '</a></div>';
 }

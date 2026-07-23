@@ -2,14 +2,16 @@
 
 A modern XML and HTML Sitemap modification for **Simple Machines Forum 2.1.x**.
 
-> **Status:** Development (v0.1.0)
+> **Status:** Development (v1.1.0)
 
 ---
 
 ## Features
 
 - HTML sitemap
-- XML sitemap for search engines
+- XML Sitemap index for search engines
+- Separate board Sitemap
+- Automatic topic Sitemap pagination at 50,000 URLs per file
 - Board overview
 - Topic overview
 - Automatic priorities
@@ -42,7 +44,14 @@ index.php?action=sitemap
 or
 
 ```
-index.php?action=sitemap;xml
+index.php?action=sitemap;sa=xml
+```
+
+This URL now returns a Sitemap index. It links automatically to the board Sitemap and to as many topic Sitemaps as required. Each topic Sitemap contains at most 50,000 URLs.
+
+```text
+index.php?action=sitemap;sa=xml;type=boards
+index.php?action=sitemap;sa=xml;type=topics;page=1
 ```
 
 ---
@@ -53,7 +62,7 @@ index.php?action=sitemap;xml
 - [x] XML Sitemap
 - [x] Boards
 - [x] Topics
-- [ ] Sitemap Index
+- [x] Sitemap Index
 - [ ] XML Compression (gzip)
 - [ ] Members (optional)
 - [ ] Calendar (optional)
@@ -85,12 +94,12 @@ Languages/
 
 | Version | Status |
 |----------|--------|
-| 0.1.0 | Project setup |
+| 1.1.0 | Project setup |
 | 0.2.0 | HTML Sitemap |
 | 0.3.0 | Topics |
 | 0.4.0 | XML Sitemap |
 | 0.5.0 | Cache |
-| 1.0.0 | First stable release |
+| 1.1.0 | First stable release |
 
 ---
 

@@ -36,3 +36,13 @@ $txt['sitemap_section_boards'] = 'Foren';
 $txt['sitemap_section_topics'] = 'Themen';
 
 $txt['invalid_sitemap_subaction'] = 'Der angeforderte Sitemap-Bereich ist nicht vorhanden.';
+
+$txt['sitemap_no_sections'] = 'Es sind keine Sitemap-Bereiche verfügbar.';
+$txt['sitemap_no_boards'] = 'Es sind keine öffentlichen Foren verfügbar.';
+$txt['sitemap_no_topics'] = 'Es sind keine öffentlichen Themen verfügbar.';
+$txt['sitemap_board'] = 'Forum';
+$txt['sitemap_topic'] = 'Thema';
+$txt['sitemap_topics'] = 'Themen';
+$txt['sitemap_posts'] = 'Beiträge';
+$txt['sitemap_replies'] = 'Antworten';
+$txt['sitemap_last_updated'] = 'Letzte Aktualisierung';

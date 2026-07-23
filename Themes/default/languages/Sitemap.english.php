@@ -36,3 +36,13 @@ $txt['sitemap_section_boards'] = 'Boards';
 $txt['sitemap_section_topics'] = 'Topics';
 
 $txt['invalid_sitemap_subaction'] = 'The requested Sitemap section does not exist.';
+
+$txt['sitemap_no_sections'] = 'No Sitemap sections are available.';
+$txt['sitemap_no_boards'] = 'No public boards are available.';
+$txt['sitemap_no_topics'] = 'No public topics are available.';
+$txt['sitemap_board'] = 'Board';
+$txt['sitemap_topic'] = 'Topic';
+$txt['sitemap_topics'] = 'Topics';
+$txt['sitemap_posts'] = 'Posts';
+$txt['sitemap_replies'] = 'Replies';
+$txt['sitemap_last_updated'] = 'Last updated';
