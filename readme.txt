@@ -1,5 +1,5 @@
 [b]SMF Sitemap for Search Engines[/b]
-Version 1.1.0
+Version 1.2.0
 
 [hr]
 
@@ -24,13 +24,14 @@ For larger forums, the XML output is automatically organized as a sitemap index.
 [li]Compatible with Google Search Console[/li]
 [li]Compatible with Bing Webmaster Tools[/li]
 [li]Built-in caching[/li]
+[li]No output-buffer manipulation or automatic footer-link injection[/li]
 [/list]
 
 [hr]
 
 [b]Installation[/b]
 
-[list=1]
+[list]
 [li]Open the SMF Administration Center.[/li]
 [li]Go to [b]Main → Package Manager → Download Packages[/b].[/li]
 [li]Upload the modification package.[/li]
@@ -88,6 +89,15 @@ Only content visible to guests is included. Boards that guests cannot access and
 [hr]
 
 [b]Changelog[/b]
+
+[b]Version 1.2.0[/b]
+
+[list]
+[li]Added redirection to mod settings after installation[/li]
+[li]Removed the automatic Sitemap link from the page footer[/li]
+[li]Removed the [tt]integrate_buffer[/tt] hook[/li]
+[li]Removed output-buffer manipulation from normal forum pages[/li]
+[/list]
 
 [b]Version 1.1.0[/b]
 

@@ -2,7 +2,7 @@
 <package-info xmlns="http://www.simplemachines.org/xml/package-info">
 	<id>matthiasfeik:sitemapforsearchengines</id>
 	<name>Sitemap for Search Engines</name>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<type>modification</type>
 
 	<install for="2.1 - 2.1.99">
@@ -15,13 +15,12 @@
 		<require-file name="Themes/default/languages/Sitemap.german_informal.php" destination="$themes_dir/default/languages" />
 		<hook hook="integrate_actions" function="SitemapActions" file="$sourcedir/Sitemap.php" />
 		<hook hook="integrate_general_mod_settings" function="SitemapGeneralModSettings" file="$sourcedir/Sitemap.php" />
-		<hook hook="integrate_buffer" function="SitemapBuffer" file="$sourcedir/Sitemap.php" />
 		<code>add_settings.php</code>
+		<redirect url="?action=admin;area=modsettings;sa=general" />
 	</install>
 
 	<uninstall for="2.1 - 2.1.99">
 		<code>remove_settings.php</code>
-		<hook hook="integrate_buffer" function="SitemapBuffer" file="$sourcedir/Sitemap.php" reverse="true" />
 		<hook hook="integrate_general_mod_settings" function="SitemapGeneralModSettings" file="$sourcedir/Sitemap.php" reverse="true" />
 		<hook hook="integrate_actions" function="SitemapActions" file="$sourcedir/Sitemap.php" reverse="true" />
 		<remove-file name="$sourcedir/Sitemap-Ext/Boards.php" />

@@ -10,7 +10,7 @@
  * variables. Integration hooks are removed declaratively in package-info.xml.
  *
  * @package Sitemap for Search Engines
- * @version 1.1.0
+ * @version 1.2.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT

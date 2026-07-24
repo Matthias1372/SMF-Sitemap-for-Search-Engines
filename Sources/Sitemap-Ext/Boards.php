@@ -4,7 +4,7 @@
  * Sitemap for Search Engines - Boards extension.
  *
  * @package Sitemap for Search Engines
- * @version 1.1.0
+ * @version 1.2.0
  * @author Matthias Feik
  * @license MIT
  */

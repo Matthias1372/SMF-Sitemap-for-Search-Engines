@@ -6,7 +6,7 @@
  * Common helper functions.
  *
  * @package Sitemap for Search Engines
- * @version 1.1.0
+ * @version 1.2.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT
@@ -390,18 +390,4 @@ function SitemapOutputIndex($sitemaps)
 	}
 
 	echo "</sitemapindex>\n";
-}
-
-/**
- * Creates the footer link HTML.
- *
- * @return string
- */
-function SitemapFooterLink()
-{
-	global $txt;
-
-	loadLanguage('Sitemap');
-
-	return '\n\t<div class="smalltext centertext sitemap_link"><a href="' . SitemapCreateUrl('xml') . '">' . $txt['sitemap_xml'] . '</a></div>';
 }

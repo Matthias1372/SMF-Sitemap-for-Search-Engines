@@ -6,7 +6,7 @@
  * Main controller.
  *
  * @package Sitemap for Search Engines
- * @version 1.1.0
+ * @version 1.2.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT
@@ -198,21 +198,4 @@ function ShowSiteMapXml()
 
 	SitemapOutputIndex($sitemaps);
 	obExit(false);
-}
-
-/**
- * Adds the Sitemap link to HTML pages.
- *
- * @param string $buffer Page output.
- *
- * @return string
- */
-function SitemapBuffer($buffer)
-{
-	global $context;
-
-	if (!empty($context['sitemap_xml']) || stripos($buffer, '</body>') === false)
-		return $buffer;
-
-	return str_ireplace('</body>', SitemapFooterLink() . "\n</body>", $buffer);
 }

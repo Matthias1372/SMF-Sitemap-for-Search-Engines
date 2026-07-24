@@ -2,7 +2,7 @@
 
 A modern XML and HTML Sitemap modification for **Simple Machines Forum 2.1.x**.
 
-> **Status:** Development (v1.1.0)
+> **Status:** Stable (v1.2.0)
 
 ---
 
@@ -19,6 +19,7 @@ A modern XML and HTML Sitemap modification for **Simple Machines Forum 2.1.x**.
 - Search engine friendly
 - PHP 8.1 / 8.2 compatible
 - Native SMF 2.1 integration
+- No output-buffer manipulation or automatic footer injection
 - Modular extension system
 
 ---
@@ -94,12 +95,9 @@ Languages/
 
 | Version | Status |
 |----------|--------|
-| 1.1.0 | Project setup |
-| 0.2.0 | HTML Sitemap |
-| 0.3.0 | Topics |
-| 0.4.0 | XML Sitemap |
-| 0.5.0 | Cache |
-| 1.1.0 | First stable release |
+| 1.2.0 | Removed automatic footer link and output-buffer hook |
+| 1.1.0 | Added automatic Sitemap index and topic pagination |
+| 1.0.0 | First stable release |
 
 ---
 

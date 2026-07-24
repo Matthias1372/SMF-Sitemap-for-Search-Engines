@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 - 2026-07-24
+
+- Removed `SitemapFooterLink()`.
+- Removed `SitemapBuffer()`.
+- Removed the `integrate_buffer` installation and uninstallation hooks.
+- Stopped injecting an automatic Sitemap link into the forum footer.
+- The XML and HTML Sitemaps remain available through their existing actions.
+
 ## 1.1.0 - 2026-07-23
 
 - Added an automatic XML Sitemap index.
