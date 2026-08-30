@@ -111,7 +111,7 @@ function SitemapTopicsGetItems($start, $items_per_page, $sort)
 			AND FIND_IN_SET({int:guest_group}, b.deny_member_groups) = 0
 			AND b.redirect = {string:empty}
 		ORDER BY ' . $sort . '
-		LIMIT {int:start}, {int:limit}',
+		LIMIT {int:limit} OFFSET {int:start}',
 		array('approved' => 1, 'guest_group' => -1, 'empty' => '', 'start' => (int) $start, 'limit' => (int) $items_per_page)
 	);
 
@@ -154,7 +154,7 @@ function SitemapTopicsXml($start = 0, $limit = 50000)
 			AND FIND_IN_SET({int:guest_group}, b.deny_member_groups) = 0
 			AND b.redirect = {string:empty}
 		ORDER BY t.id_topic
-		LIMIT {int:start}, {int:limit}',
+		LIMIT {int:limit} OFFSET {int:start}',
 		array(
 			'approved' => 1,
 			'guest_group' => -1,
@@ -206,7 +206,7 @@ function SitemapTopicsPageLastmod($start, $limit)
 				AND FIND_IN_SET({int:guest_group}, b.deny_member_groups) = 0
 				AND b.redirect = {string:empty}
 			ORDER BY t.id_topic
-			LIMIT {int:start}, {int:limit}
+			LIMIT {int:limit} OFFSET {int:start}
 		) AS sitemap_topics',
 		array(
 			'approved' => 1,
