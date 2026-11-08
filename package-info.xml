@@ -13,6 +13,7 @@
 		<require-file name="Themes/default/languages/Sitemap.english.php" destination="$themes_dir/default/languages" />
 		<require-file name="Themes/default/languages/Sitemap.german.php" destination="$themes_dir/default/languages" />
 		<require-file name="Themes/default/languages/Sitemap.german_informal.php" destination="$themes_dir/default/languages" />
+		<require-file name="Themes/default/languages/Sitemap.russian.php" destination="$themes_dir/default/languages" />
 		<hook hook="integrate_actions" function="SitemapActions" file="$sourcedir/Sitemap.php" />
 		<hook hook="integrate_general_mod_settings" function="SitemapGeneralModSettings" file="$sourcedir/Sitemap.php" />
 		<code>add_settings.php</code>
@@ -28,6 +29,7 @@
 		<remove-file name="$themes_dir/default/languages/Sitemap.english.php" />
 		<remove-file name="$themes_dir/default/languages/Sitemap.german.php" />
 		<remove-file name="$themes_dir/default/languages/Sitemap.german_informal.php" />
+		<remove-file name="$themes_dir/default/languages/Sitemap.russian.php" />
 		<remove-file name="$sourcedir/Sitemap.php" />
 		<remove-file name="$sourcedir/Sitemap.subs.php" />
 	</uninstall>
