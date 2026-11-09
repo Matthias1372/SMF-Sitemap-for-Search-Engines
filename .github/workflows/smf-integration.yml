@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/smf-ci"
-          php -d display_errors=1 -d log_errors=1 \
+          PHP_CLI_SERVER_WORKERS=4 php -d display_errors=1 -d log_errors=1 \
             -S 127.0.0.1:8080 -t "$SMF_ROOT" \
             >"$RUNNER_TEMP/smf-ci/php-server.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/smf-ci/php-server.pid"
