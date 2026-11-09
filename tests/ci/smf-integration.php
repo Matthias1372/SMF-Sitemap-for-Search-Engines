@@ -291,6 +291,12 @@ try
 	file_put_contents($diagnostics . '/install-complete.html', $response['body']);
 	note("Installed SMF 2.1.7 with {$dbType} through its web installer.");
 
+	foreach (['install.php', 'install_2-1_mysql.sql', 'install_2-1_postgresql.sql'] as $installerFile)
+	{
+		$path = $root . '/' . $installerFile;
+		ensure(!file_exists($path) || unlink($path), "Could not remove {$installerFile} after installation.");
+	}
+
 	$settings = load_smf_settings($root . '/Settings.php');
 	ensure($settings['db_type'] === $dbType, "Settings.php contains {$settings['db_type']} instead of {$dbType}.");
 	ensure($settings['db_name'] === $dbName && $settings['db_prefix'] === 'smf_', 'Settings.php contains unexpected database settings.');
