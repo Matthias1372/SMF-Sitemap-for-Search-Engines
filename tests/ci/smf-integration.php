@@ -314,7 +314,15 @@ try
 	ensure(str_contains($response['body'], 'action=logout'), 'SMF did not return an authenticated page after login.');
 
 	$packageName = 'sitemap-for-search-engines.tar.gz';
-	$response = $admin->request($baseUrl . '/index.php?action=admin;area=packages;sa=install;package=' . rawurlencode($packageName));
+	$packageUrl = $baseUrl . '/index.php?action=admin;area=packages;sa=install;package=' . rawurlencode($packageName);
+	$response = $admin->request($packageUrl);
+	if (str_contains($response['body'], 'id="admin_login"'))
+	{
+		$reauth = login_form($response['body'], $baseUrl);
+		$response = $admin->request($reauth['action'], array_merge($reauth['fields'], [
+			'admin_pass' => $adminPassword,
+		]));
+	}
 	file_put_contents($diagnostics . '/package-preview.html', $response['body']);
 	ensure(!str_contains($response['body'], 'class="errorbox"'), 'SMF package manager rejected the package preview.');
 	$form = package_install_form($response['body'], $baseUrl);
