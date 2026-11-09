@@ -2,7 +2,7 @@
 
 A modern XML and HTML Sitemap modification for **Simple Machines Forum 2.1.x**.
 
-> **Status:** Stable (v1.2.0)
+> **Status:** Stable (v1.3.0)
 
 ---
 
@@ -18,6 +18,8 @@ A modern XML and HTML Sitemap modification for **Simple Machines Forum 2.1.x**.
 - XML cache
 - Search engine friendly
 - PHP 8.1 / 8.2 compatible
+- Tested with PHP 8.4, PostgreSQL 16, and MySQL 8.4
+- English, German, German informal, and Russian translations
 - Native SMF 2.1 integration
 - No output-buffer manipulation or automatic footer injection
 - Modular extension system
@@ -95,6 +97,7 @@ Languages/
 
 | Version | Status |
 |----------|--------|
+| 1.3.0 | Added Russian translation and PostgreSQL-compatible pagination |
 | 1.2.0 | Removed automatic footer link and output-buffer hook |
 | 1.1.0 | Added automatic Sitemap index and topic pagination |
 | 1.0.0 | First stable release |

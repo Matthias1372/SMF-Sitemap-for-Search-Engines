@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 - 2026-11-09
+
+- Added a Russian translation.
+- Added portable SQL pagination for PostgreSQL while retaining MySQL compatibility.
+- Added automated integration coverage for SMF 2.1.7 with PostgreSQL 16 and MySQL 8.4 on PHP 8.4.
+- Added an in-place upgrade path from version 1.2.0.
+
 ## 1.2.0 - 2026-07-24
 
 - Removed `SitemapFooterLink()`.

@@ -1,5 +1,5 @@
 [b]SMF Sitemap for Search Engines[/b]
-Version 1.2.0
+Version 1.3.0
 
 [hr]
 
@@ -89,6 +89,15 @@ Only content visible to guests is included. Boards that guests cannot access and
 [hr]
 
 [b]Changelog[/b]
+
+[b]Version 1.3.0[/b]
+
+[list]
+[li]Added a Russian translation. Thanks to @Bugo[/li]
+[li]Added PostgreSQL-compatible sitemap pagination while retaining MySQL compatibility. Thanks to @Bugo[/li]
+[li]Added automated integration tests for SMF 2.1.7 with PostgreSQL 16 and MySQL 8.4 on PHP 8.4[/li]
+[li]Added an in-place upgrade path from version 1.2.0[/li]
+[/list]
 
 [b]Version 1.2.0[/b]
 

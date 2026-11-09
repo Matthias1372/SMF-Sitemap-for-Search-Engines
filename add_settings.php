@@ -10,7 +10,7 @@
  * used internally by the package manager.
  *
  * @package Sitemap for Search Engines
- * @version 1.2.0
+ * @version 1.3.0
  * @author Matthias Feik
  * @copyright Matthias Feik
  * @license MIT
