@@ -1,0 +1,159 @@
+name: SMF 2.1.7 integration
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smf-integration-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: PHP 8.4 / ${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    continue-on-error: ${{ matrix.experimental }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: PostgreSQL 16
+            db_type: postgresql
+            db_image: postgres:16
+            db_port: 5432
+            health_options: >-
+              --health-cmd "pg_isready -U smf -d smf"
+              --health-interval 5s
+              --health-timeout 5s
+              --health-retries 20
+            experimental: false
+          - label: MySQL 8.4 (comparison)
+            db_type: mysql
+            db_image: mysql:8.4
+            db_port: 3306
+            health_options: >-
+              --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -psmf-ci-root-password"
+              --health-interval 5s
+              --health-timeout 5s
+              --health-retries 30
+            experimental: true
+
+    services:
+      database:
+        image: ${{ matrix.db_image }}
+        env:
+          POSTGRES_DB: smf
+          POSTGRES_USER: smf
+          POSTGRES_PASSWORD: smf-ci-password
+          MYSQL_DATABASE: smf
+          MYSQL_USER: smf
+          MYSQL_PASSWORD: smf-ci-password
+          MYSQL_ROOT_PASSWORD: smf-ci-root-password
+        ports:
+          - ${{ matrix.db_port }}:${{ matrix.db_port }}
+        options: ${{ matrix.health_options }}
+
+    env:
+      SMF_ROOT: ${{ github.workspace }}/.ci/smf
+      SMF_BASE_URL: http://127.0.0.1:8080
+      DB_TYPE: ${{ matrix.db_type }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: ${{ matrix.db_port }}
+      DB_NAME: smf
+      DB_USER: smf
+      DB_PASSWORD: smf-ci-password
+      SMF_ADMIN_PASSWORD: smf-ci-admin-password
+
+    steps:
+      - name: Check out the modification
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl, dom, fileinfo, gd, intl, mbstring, mysqli, pgsql, simplexml, xml
+          coverage: none
+
+      - name: Lint modification and test harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          find Sources Themes -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l add_settings.php
+          php -l remove_settings.php
+          php -l tests/ci/smf-integration.php
+
+      - name: Prepare SMF 2.1.7 and the package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$SMF_ROOT")"
+          git clone --depth 1 --branch v2.1.7 https://github.com/SimpleMachines/SMF.git "$SMF_ROOT"
+
+          # The SMF source tag stores installer-only files under other/. Release
+          # archives place these files in the forum root.
+          cp "$SMF_ROOT/other/install.php" "$SMF_ROOT/install.php"
+          cp "$SMF_ROOT/other/Settings.php" "$SMF_ROOT/Settings.php"
+          cp "$SMF_ROOT/other/Settings_bak.php" "$SMF_ROOT/Settings_bak.php"
+          cp "$SMF_ROOT/other/install_2-1_mysql.sql" "$SMF_ROOT/install_2-1_mysql.sql"
+          cp "$SMF_ROOT/other/install_2-1_postgresql.sql" "$SMF_ROOT/install_2-1_postgresql.sql"
+
+          tar \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=.ci \
+            --exclude=tests \
+            -czf "$SMF_ROOT/Packages/sitemap-for-search-engines.tar.gz" \
+            -C "$GITHUB_WORKSPACE" .
+
+      - name: Start the local SMF web server
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/smf-ci"
+          php -d display_errors=1 -d log_errors=1 \
+            -S 127.0.0.1:8080 -t "$SMF_ROOT" \
+            >"$RUNNER_TEMP/smf-ci/php-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/smf-ci/php-server.pid"
+
+          for attempt in {1..30}; do
+            if curl --silent --show-error --fail "$SMF_BASE_URL/install.php" >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "SMF's local web server did not become ready." >&2
+          exit 1
+
+      - name: Install SMF, install the mod, and exercise the sitemaps
+        run: php tests/ci/smf-integration.php
+
+      - name: Reject fatal PHP errors
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/smf-ci/php-server.log"
+          test -f "$log"
+          if grep -E 'PHP (Fatal error|Parse error)|Uncaught (Error|Exception)' "$log"; then
+            echo "Fatal PHP errors were written by the integration run." >&2
+            exit 1
+          fi
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smf-integration-${{ matrix.db_type }}
+          path: |
+            ${{ runner.temp }}/smf-ci
+          if-no-files-found: ignore
+          retention-days: 7
