@@ -127,6 +127,36 @@ function package_install_form(string $html, string $baseUrl): array
 	return ['action' => $action, 'fields' => $fields];
 }
 
+/** @return array{action:string, fields:array<string,string>} */
+function login_form(string $html, string $baseUrl): array
+{
+	$previous = libxml_use_internal_errors(true);
+	$document = new DOMDocument();
+	$loaded = $document->loadHTML($html);
+	libxml_clear_errors();
+	libxml_use_internal_errors($previous);
+	ensure($loaded, 'Could not parse the SMF login page.');
+
+	$xpath = new DOMXPath($document);
+	$form = $xpath->query('//form[@id="frmLogin"]')->item(0);
+	ensure($form instanceof DOMElement, 'SMF did not show its login form.');
+
+	$action = html_entity_decode($form->getAttribute('action'), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+	if (!preg_match('~^https?://~i', $action))
+		$action = rtrim($baseUrl, '/') . '/' . ltrim($action, '/');
+
+	$fields = [];
+	foreach ($xpath->query('.//input[@type="hidden"]', $form) as $input)
+	{
+		if ($input instanceof DOMElement && $input->getAttribute('name') !== '')
+			$fields[$input->getAttribute('name')] = $input->getAttribute('value');
+	}
+
+	ensure(count($fields) >= 2, 'SMF login form is missing its session or login token.');
+
+	return ['action' => $action, 'fields' => $fields];
+}
+
 function fetch_xml(HttpClient $client, string $url, string $expectedRoot): array
 {
 	$response = $client->request($url);
@@ -266,12 +296,16 @@ try
 	ensure($settings['db_name'] === $dbName && $settings['db_prefix'] === 'smf_', 'Settings.php contains unexpected database settings.');
 
 	$admin = new HttpClient($diagnostics . '/admin-cookies.txt');
-	$response = $admin->request($baseUrl . '/index.php?action=login2', [
+	$response = $admin->request($baseUrl . '/index.php?action=login');
+	$form = login_form($response['body'], $baseUrl);
+	$response = $admin->request($form['action'], array_merge($form['fields'], [
 		'user' => 'ci-admin',
 		'passwrd' => $adminPassword,
 		'cookielength' => '-1',
-	]);
+	]));
+	file_put_contents($diagnostics . '/login-response.html', $response['body']);
 	ensure(!str_contains($response['body'], 'class="errorbox"'), 'SMF administrator login failed.');
+	ensure(str_contains($response['body'], 'action=logout'), 'SMF did not return an authenticated page after login.');
 
 	$packageName = 'sitemap-for-search-engines.tar.gz';
 	$response = $admin->request($baseUrl . '/index.php?action=admin;area=packages;sa=install;package=' . rawurlencode($packageName));
